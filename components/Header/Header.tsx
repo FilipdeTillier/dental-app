@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 const Header = () => {
@@ -16,12 +17,12 @@ const Header = () => {
           </div>
 
           <nav className="hidden md:flex items-center space-x-4">
-            <a
+            <Link
               href="/api/auth/logout"
               className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
             >
               Logout
-            </a>
+            </Link>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -90,12 +91,12 @@ const Header = () => {
               </svg>
             </button>
             <nav className="flex flex-col items-center space-y-4">
-              <a
+              <Link
                 href="/api/auth/logout"
                 className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-lg font-medium"
               >
                 Logout
-              </a>
+              </Link>
             </nav>
           </div>
         </div>
