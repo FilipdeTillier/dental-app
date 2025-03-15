@@ -28,6 +28,7 @@ const useIsMobile = () => {
   return isMobile;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Table = <T extends Record<string, any>>({
   data,
   pageNumber,

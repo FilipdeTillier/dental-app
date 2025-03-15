@@ -18,6 +18,7 @@ const DashboardTable = () => {
       <Table
         data={data.slice((pageNumber - 1) * pageSize, pageNumber * pageSize)}
         pageNumber={pageNumber}
+        pageSize={pageSize}
         pageNumbers={data.length / pageSize}
         onRowClick={handleRowClick}
         onPageChange={(page) => {
