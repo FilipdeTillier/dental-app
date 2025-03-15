@@ -1,5 +1,11 @@
 name: Firebase Build and Deploy
 
+# Dodane uprawnienia dla GitHub token
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
 on:
   push:
     branches: [main]
