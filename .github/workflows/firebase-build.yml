@@ -70,15 +70,6 @@ jobs:
           name: ngrok-url
           path: ngrok_url.txt
 
-      # Opcjonalnie: Wyślij URL na Slacka, Discorda lub przez e-mail
-      - name: Send notification
-        if: ${{ secrets.NOTIFICATION_WEBHOOK }}
-        run: |
-          NGROK_URL=$(cat ngrok_url.txt)
-          curl -X POST -H "Content-Type: application/json" \
-            -d '{"text":"Nowy deployment Next.js dostępny pod: '"$NGROK_URL"'"}' \
-            ${{ secrets.NOTIFICATION_WEBHOOK }}
-
       # Utrzymuj proces działający przez 24 godziny (limit darmowej wersji ngrok)
       - name: Keep alive
         run: |
