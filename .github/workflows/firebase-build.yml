@@ -1,73 +1,85 @@
-name: Firebase Build and Deploy
-
-# Dodane uprawnienia dla GitHub token
-permissions:
-  checks: write
-  contents: read
-  pull-requests: write
+name: Deploy Next.js to ngrok
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  build_and_deploy:
-    name: Build and Deploy Firebase
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
           cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run linting
-        run: npm run lint
-
-      - name: Run tests
-        run: npm run test
-
-      - name: Build project
+      - name: Build Next.js app
         run: npm run build
-
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
-      - name: Deploy to Firebase
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: firebase deploy --token "$FIREBASE_TOKEN" --non-interactive
         env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          NODE_ENV: production
 
-      - name: Create hosting preview
-        if: github.event_name == 'pull_request'
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Install ngrok
+        run: npm install -g ngrok
+
+      - name: Create ngrok config
+        run: |
+          mkdir -p ~/.config/ngrok
+          echo "version: 2" > ~/.config/ngrok/ngrok.yml
+          echo "authtoken: ${{ secrets.NGROK_AUTH_TOKEN }}" >> ~/.config/ngrok/ngrok.yml
+          echo "region: eu" >> ~/.config/ngrok/ngrok.yml
+
+      - name: Start Next.js and ngrok
+        run: |
+          # Uruchom Next.js w tle
+          npm run start &
+
+          # Zapisz PID procesu
+          NEXT_PID=$!
+
+          # Poczekaj aż aplikacja się uruchomi
+          sleep 10
+
+          # Uruchom ngrok i zapisz URL do pliku
+          ngrok http 3000 --log=stdout > ngrok.log &
+
+          # Poczekaj, aż ngrok się uruchomi
+          sleep 5
+
+          # Pobierz publiczny URL ngrok
+          NGROK_URL=$(grep -o 'https://.*\.ngrok-free\.app' ngrok.log | head -n 1)
+
+          # Wypisz URL w logu
+          echo "Next.js jest dostępny pod adresem: $NGROK_URL"
+
+          # Zapisz URL jako artefakt GitHub Actions
+          echo $NGROK_URL > ngrok_url.txt
+
+      - name: Upload ngrok URL as artifact
+        uses: actions/upload-artifact@v4
         with:
-          repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
-          projectId: "${{ secrets.FIREBASE_PROJECT_ID }}"
-          channelId: "pr-${{ github.event.number }}"
+          name: ngrok-url
+          path: ngrok_url.txt
 
-      - name: Check build output
+      # Opcjonalnie: Wyślij URL na Slacka, Discorda lub przez e-mail
+      - name: Send notification
+        if: ${{ secrets.NOTIFICATION_WEBHOOK }}
         run: |
-          echo "Contents of current directory:"
-          ls -la
-          echo "Contents of dist directory (if exists):"
-          ls -la dist || echo "dist directory doesn't exist"
+          NGROK_URL=$(cat ngrok_url.txt)
+          curl -X POST -H "Content-Type: application/json" \
+            -d '{"text":"Nowy deployment Next.js dostępny pod: '"$NGROK_URL"'"}' \
+            ${{ secrets.NOTIFICATION_WEBHOOK }}
 
-      - name: Ensure index.html exists
+      # Utrzymuj proces działający przez 24 godziny (limit darmowej wersji ngrok)
+      - name: Keep alive
         run: |
-          mkdir -p dist
-          # Jeśli znasz lokalizację pliku index.html:
-          cp path/to/actual/index.html dist/
-          # Lub utwórz prosty plik index.html:
-          # echo '<html><body><h1>My App</h1></body></html>' > dist/index.html
+          # Utrzymuj działanie przez 23 godziny (aby mieć margines bezpieczeństwa)
+          sleep 82800
