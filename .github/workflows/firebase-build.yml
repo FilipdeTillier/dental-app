@@ -56,3 +56,18 @@ jobs:
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
           projectId: "${{ secrets.FIREBASE_PROJECT_ID }}"
           channelId: "pr-${{ github.event.number }}"
+
+      - name: Check build output
+        run: |
+          echo "Contents of current directory:"
+          ls -la
+          echo "Contents of dist directory (if exists):"
+          ls -la dist || echo "dist directory doesn't exist"
+
+      - name: Ensure index.html exists
+        run: |
+          mkdir -p dist
+          # Jeśli znasz lokalizację pliku index.html:
+          cp path/to/actual/index.html dist/
+          # Lub utwórz prosty plik index.html:
+          # echo '<html><body><h1>My App</h1></body></html>' > dist/index.html
