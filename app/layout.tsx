@@ -2,7 +2,7 @@ import "./globals.css";
 
 import { Geist, Geist_Mono } from "next/font/google";
 
-import { LoginButton } from "@/components/LoginButton/LoginButton";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 const geistSans = Geist({
@@ -30,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <LoginButton />
+        <Link href="/api/auth/login">Login</Link>
         {children}
       </body>
     </html>
