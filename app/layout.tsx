@@ -1,12 +1,9 @@
-"use client";
-
 import "./globals.css";
 
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { LoginButton } from "@/components/LoginButton/LoginButton";
 import type { Metadata } from "next";
-import { useCallback } from "react";
-import { useRouter } from "next/router";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,19 +25,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const router = useRouter();
-  const handleLogin = useCallback(() => {
-    // Pobierz bazowy URL z okna przeglądarki
-    const baseUrl = window.location.origin;
-    router.push(`${baseUrl}/api/auth/login`);
-  }, [router]);
-
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <button onClick={handleLogin}>Login</button>
+        <LoginButton />
         {children}
       </body>
     </html>
